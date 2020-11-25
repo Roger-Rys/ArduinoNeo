@@ -4,7 +4,7 @@
 SoftwareSerial proA7(10, 11); // pin RX y TX
 SoftwareSerial neo6(8, 9); // pin RX y TX
 
-TinyGPSPlus GPS; // Nombre GPS
+TinyGPSPlus gps; // Nombre GPS
 
 ////////VARIABLES PINES
 byte p_PWRKEY = 2; // Pin para activar la red GSM
@@ -27,6 +27,10 @@ char *numeroPhone = NULL; //No almacena en una memoria especifica
 
 ///////DATOS POR INTERNET
 bool enviarDatos = false;//Defecto false
+
+///////Para enviar datos posicion
+bool encenderGPS = false;
+String coordenadas = "";
 
 
 /*******FUNC SETUP***************************************************************/
@@ -67,30 +71,60 @@ void loop() {
   }
   //ACTIVAR DATOS
   //Los numeros telefonicos son iguales, ConteoRign es un numero Par y mayor a cero, enviarDatos es falso
-  else if ((conteoRing % 2) == 1 && NumTelSav == NumTelRec && conteoRing > 0 && enviarDatos == false) {
+  else if ((conteoRing % 2) == 1 && NumTelSav == NumTelRec && conteoRing > 0 && enviarDatos == false && encenderGPS == false) {
     Serial.println("---DATOS ENCENDIDO---");
     delay(500);
-    enviarDatos = true; //enviarDatos sera true
+    encenderGPS = true;
+    enviarDatos = false; //enviarDatos sera true
+    Serial.println("GPS on");
   }
-  //APAGAR DATOS
-  //Los numeros telefonicos son iguales, ConteoRign es un numero Impar y mayor a cero
-  else if ((conteoRing % 2) == 0 && NumTelSav == NumTelRec && conteoRing > 0) {
-    ////////DESACTIVAR enviarDatos
-    enviarDatos = false; //enviarDatos sera false
-    Serial.println("--Conexion cerrada--");
-    ComunicacionSerial(); //Llamar a funcion "ComunicacionSerial"
+
+  //PROCESO DE RECOGER COORDENADAS
+  else if (encenderGPS) {
+    digitalWrite(ledGPSon, HIGH);
+    neo6.listen();
+    while (neo6.available() > 0) {
+      //char isbyte = neo6.read();
+      //Serial.write(isbyte);
+      gps.encode(neo6.read());
+
+      if (gps.location.isUpdated()) {
+        //Trama a enviar con datos de posicion en los campos field1 y field2
+        coordenadas = "&field1=" + String(gps.location.lat(), 6) + "&field2=" + String(gps.location.lng(), 6);
+        encenderGPS = false;
+        enviarDatos = true; //enviarDatos sera true
+        digitalWrite(ledGPSon, LOW);
+      }
+    }
   }
+
   //POCESO DE ENVIO DE DATOS
   else if (enviarDatos) {
-    enviarDatosGPS(); //Llamar a la funcion "enviarDatosGPS"
+    enviarDatosGPS(coordenadas); //Llamar a la funcion "enviarDatosGPS"
     serialA7();//___
+
     if (escribirComando("AT", 4000, true) != true) { // Envia AT y espera respuesta OK
       Serial.println("--Desconectando A7--");
       proA7.println("AT+CPOF"); delay(1000);
       configuracionInicial(); // Configuracion inicial
     }
     serialA7();//___
+    encenderGPS = true;
+    serialA7();//___
+    enviarDatos = false; //enviarDatos sera true
+    Serial.println("GPS on");
+    serialA7();//___
+  }
 
+  //APAGAR DATOS
+  //Los numeros telefonicos son iguales, ConteoRign es un numero Impar y mayor a cero
+  else if ((conteoRing % 2) == 0 && NumTelSav == NumTelRec && conteoRing > 0) {
+    ////////DESACTIVAR enviarDatos
+    enviarDatos = false; //enviarDatos sera false
+    ////////DESACTIVAR enviarDatos
+    encenderGPS = false; //enviarDatos sera false
+    Serial.println("--Conexion cerrada--");
+    ComunicacionSerial(); //Llamar a funcion "ComunicacionSerial"
   }
   else {
     ComunicacionSerial(); //Llamar a funcion "ComunicacionSerial"

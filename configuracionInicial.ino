@@ -6,6 +6,7 @@ void configuracionInicial() {
 
   Serial.println("--A7 desconectado--");
   int count = 0;
+  
   while (escribirComando("AT", 3000, false) != true) { // Envia AT y espera respuesta OK
     count++;
     if (count % 10 == 0) {
@@ -21,10 +22,12 @@ void configuracionInicial() {
   }
   Serial.println("---Conectado---");
   delay(2000);
+  
   //CONECTADO A RED
   bool server = false;
   bool red = true;
   //Solo Conectar a la red y no al servidor
   coneccion_a_Red(red, server);
   delay(1000);  
+  
 }

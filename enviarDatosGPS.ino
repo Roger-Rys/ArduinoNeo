@@ -1,39 +1,22 @@
 /******ENVIA EL MENSAJE DE POSICION POR DATOS*************/
-void enviarDatosGPS() {
-  String posicion = "";
-  delay(500);
-
-  ////////RECEPTAR DATOS DE GPS
-  serialA7();//___
-  delay(500);
-  //GPS ACTIVADO
-  Serial.println("GPS on");
-  do {
-    posicion = SerialDatosGPS(); // Lee los datos GPS y guardar valores en variable
-    delay(500); //500
-  } while (posicion.length() <= 32);
-  delay(250);//500
-  serialA7();//__
-  ////////DESACTIVA GPS
-  delay(100);
-  digitalWrite(ledGPSon, LOW); //LED para GPSon
-  delay(500);//1000
-  serialA7();//___
+void enviarDatosGPS(String posicion) {
 
   //CONECTANDO CON SERVIDOR A LA RED
   byte cont = 0;
   bool aRed = false;
   bool aServer = true;
-  while(TCP_GPRS(aRed, aServer)!=true){
+  while (TCP_GPRS(aRed, aServer) != true) {
     delay(500);
     cont++;
-    if(cont%5==0){
+    if (cont % 5 == 0) {
       //Reintentar conexion con modulo A7
       proA7.println("AT+CPOF"); delay(1000);
       configuracionInicial(); // Configuracion inicial
     }
   }
   serialA7();//___
+
+  //ENVIANDO DATOS AL SERVIDOR
   if (posicion.length() > 32) {
     String dato = "GET https://api.thingspeak.com/update?api_key=2CNOXEGVDQ3X35K7";
     dato += String(posicion);
@@ -58,7 +41,7 @@ void enviarDatosGPS() {
     digitalWrite(ledSend, LOW); //LED para Send Indicador de envio de mensaje
     delay(500);
     serialA7();//___
-    
+
     Serial.println("Enviado");
     serialA7();//___
     digitalWrite(ledSend, LOW);  //Apagar indicador de envio de mensaje
