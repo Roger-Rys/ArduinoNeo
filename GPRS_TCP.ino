@@ -1,3 +1,4 @@
+/**********TEC_GPRS*******************************/
 bool TCP_GPRS(bool aRed, bool aServer) {
   if (aRed) { //Condicion para conectar a la red
     bool creg = false, cgatt = false, cgdcont = false, cgact = false;

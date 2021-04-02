@@ -1,4 +1,4 @@
-/******ENVIA EL MENSAJE DE POSICION POR DATOS*************/
+/******ENVIA EL MENSAJE DE POSICION POR DATOS************/
 void enviarDatosGPS(String posicion) {
   //CONECTANDO CON SERVIDOR A LA RED
   byte cont = 0;

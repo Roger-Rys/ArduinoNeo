@@ -1,4 +1,4 @@
-/*********FUNCION SERIALA7******************************/
+/*********FUNCION SERIALA7*****************************/
 void serialA7() {
   proA7.listen();
   while (proA7.available() > 0) {

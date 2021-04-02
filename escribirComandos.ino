@@ -1,4 +1,4 @@
-
+//Escribir Comandos
 bool escribirComando(String comando, const int timeout, bool mostrar)
 {
   //Varlor que devuelve la funcion

@@ -1,4 +1,4 @@
-/*******FUNC CONFIGURACION_INIC*******************************************************/
+/*******FUNC CONFIGURACION_INIC*****************************************************/
 void configuracionInicial() {
   digitalWrite(p_PWRKEY, HIGH); delay(3000); // 2 seg para Activar la red GSM
   digitalWrite(p_PWRKEY, LOW); delay(2000); //10seg

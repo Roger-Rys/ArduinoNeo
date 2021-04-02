@@ -1,4 +1,4 @@
-/**********DETECTAR NUMERO TELEFONICO*********************************/
+/**********DETECTAR NUMERO TELEFONICO*******************************/
 String detectarNumTel(char *tramaPhone){ //Devolvera un valor String
   String strNumTel = ""; // StrNumTel almacenara el numero telefonico
   char *cadenaSeparar; // Cadena a separar
