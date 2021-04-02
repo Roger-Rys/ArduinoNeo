@@ -9,7 +9,7 @@ void serialA7() {
       valorStr.toCharArray(trama1, 100); //ValorStr se almacena en arregloChar
       ///////DETECTA EL RING/////////
       if ((strstr(trama1, " RING") != NULL)) { // Detecta si trama1 = RING
-        digitalWrite(ledLlamada, HIGH);  //Indicador de llamada entrante        
+        analogWrite(ledLlamada, encender);  //Indicador de llamada entrante        
         valorStr = ""; // Limpia valorStr
         memset(trama1, '\0', 100); // Limpia Trama
         conteoRing++; // Aumenta conteoRing
@@ -21,7 +21,7 @@ void serialA7() {
         }        
         proA7.println("ATH"); // Cuelga la llamada
         delay(100); 
-        digitalWrite(ledLlamada, LOW); //Indicador de llamada entrante         
+        analogWrite(ledLlamada, apagar); //Indicador de llamada entrante         
         delay(100); 
       }
       ///////DETECTA EL +CLCC contiene el numero telefonico/////////
@@ -33,7 +33,7 @@ void serialA7() {
         NumTelRec = detectarNumTel(num_telefoYmas);
         valorStr = " "; // Limpia valorStr
         memset(trama1, '\0', 100); // Limpia Trama
-        digitalWrite(ledLlamada, LOW); //Indicador de fin de llamada
+        analogWrite(ledLlamada, apagar); //Indicador de fin de llamada
       }
       ///////BORRA STRING Y TRAMA1/////////
       else {

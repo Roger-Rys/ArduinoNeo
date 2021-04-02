@@ -1,14 +1,16 @@
 #include <TinyGPS++.h>
 #include <SoftwareSerial.h>
 
-SoftwareSerial proA7(10, 11); // pin RX y TX
-SoftwareSerial neo6(8, 9); // pin RX y TX
+SoftwareSerial neo6(10, 11); // pin RX y TX
+SoftwareSerial proA7(8, 9); // pin RX y TX
 
 TinyGPSPlus gps; // Nombre GPS
 
 ////////VARIABLES PINES
-byte p_PWRKEY = 2; // Pin para activar la red GSM
-byte ledSend = 7, ledLlamada = 6, ledGPSon = 4, onRed = 5, p_reset_A7 = 3, power = 12; // Leds de activacion
+const byte power_A7 = 4, p_reset_A7 = 3, p_PWRKEY = 2;
+const byte ledOn = A5, ledSend = A4, ledLlamada = A3, ledGPSon = A2, onRed = A1, ledPWRKEY = A0; // Leds de activacion
+///////VARIABLES PARA ENCENDER Y APAGAR LED
+const int encender = 255, apagar = 0;
 
 ////////COMUNICACION_SERIAL
 byte conteoRing = 0; // conteoRing
@@ -38,16 +40,12 @@ void setup() {
   pinMode(5, INPUT);// Pin MUX como salida
 
   ////////DECLARAR PINES
-  //PINES LEDS
-  pinMode(ledSend, OUTPUT); pinMode(ledLlamada, OUTPUT);
-  pinMode(ledGPSon, OUTPUT); pinMode(onRed, OUTPUT);
-  //PIN PARA PWR KEY
-  pinMode(p_PWRKEY, OUTPUT);
-  //PIN PARA RESET MODULO A7
-  pinMode(p_reset_A7, OUTPUT);
   //POWER
-  pinMode(power, OUTPUT);
-  digitalWrite(power, HIGH);
+  pinMode(power_A7, OUTPUT);
+  digitalWrite(power_A7, HIGH);
+
+  //LED
+  analogWrite(ledOn, encender);
 
   delay(20000);  //Esperar a que modulo A7 inicialice
   //Velocidad serial para arduino nano
@@ -57,6 +55,7 @@ void setup() {
   }
   // Velocidad serial para modulo A7
   proA7.begin(9600);
+  // Velocidad serial para modulo Neo6m
   neo6.begin(9600);
   Serial.println("----INICIO----");
   configuracionInicial(); // Configuracion inicial
@@ -78,31 +77,32 @@ void loop() {
     enviarDatos = false; //enviarDatos sera true
     Serial.println("GPS on");
   }
-
   //PROCESO DE RECOGER COORDENADAS
   else if (encenderGPS) {
-    digitalWrite(ledGPSon, HIGH);
+    //Encender led GPS
+    analogWrite(ledGPSon, encender);
+    //Escuchar al modulo neo6m por puerto serial
     neo6.listen();
+    //Neo6m habilitado
     while (neo6.available() > 0) {
-      //char isbyte = neo6.read();
-      //Serial.write(isbyte);
+      //Codificar los valores NMEA entregada por modulo Neo6m
       gps.encode(neo6.read());
-
+      //Deteccion de nuevas coordenadas
       if (gps.location.isUpdated()) {
         //Trama a enviar con datos de posicion en los campos field1 y field2
         coordenadas = "&field1=" + String(gps.location.lat(), 6) + "&field2=" + String(gps.location.lng(), 6);
+        //Asignacion de variables
         encenderGPS = false;
-        enviarDatos = true; //enviarDatos sera true
-        digitalWrite(ledGPSon, LOW);
+        enviarDatos = true; //enviarDatos sera verdadera
+        //Apagar led GPS
+        analogWrite(ledGPSon, apagar);
       }
     }
   }
-
   //POCESO DE ENVIO DE DATOS
   else if (enviarDatos) {
     enviarDatosGPS(coordenadas); //Llamar a la funcion "enviarDatosGPS"
     serialA7();//___
-
     if (escribirComando("AT", 4000, true) != true) { // Envia AT y espera respuesta OK
       Serial.println("--Desconectando A7--");
       proA7.println("AT+CPOF"); delay(1000);
@@ -114,8 +114,16 @@ void loop() {
     enviarDatos = false; //enviarDatos sera true
     Serial.println("GPS on");
     serialA7();//___
+    delay(2000);
+    serialA7();//___
+    delay(2000);
+    serialA7();//___
+    delay(2000);
+    serialA7();//___
+    delay(2000);
+    serialA7();//___
+    delay(2000);
   }
-
   //APAGAR DATOS
   //Los numeros telefonicos son iguales, ConteoRign es un numero Impar y mayor a cero
   else if ((conteoRing % 2) == 0 && NumTelSav == NumTelRec && conteoRing > 0) {

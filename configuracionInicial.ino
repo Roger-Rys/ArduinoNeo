@@ -14,14 +14,18 @@ void configuracionInicial() {
       digitalWrite(p_reset_A7, LOW);
     }
     if (count % 15 == 0 ) {
-      digitalWrite(power, LOW); delay(2000);
-      digitalWrite(power, HIGH);
+      digitalWrite(power_A7, LOW); delay(2000);
+      digitalWrite(power_A7, HIGH);
     }
-    digitalWrite(p_PWRKEY, HIGH); delay(3000); // 3 seg para Activar la red GSM
+    digitalWrite(p_PWRKEY, HIGH); // Pin activa PWRKEY de A7
+    analogWrite(ledPWRKEY, encender); //Led indicador 
+    delay(3000); // 3 seg para Activar la red GSM
     digitalWrite(p_PWRKEY, LOW);
+    analogWrite(ledPWRKEY, apagar); //Led indicador 
   }
   Serial.println("---Conectado---");
   delay(2000);
+  escribirComando("AT+CIPSHUT", 3000, false);
   
   //CONECTADO A RED
   bool server = false;
